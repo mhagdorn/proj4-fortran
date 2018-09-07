@@ -18,26 +18,7 @@
 
 module proj4
 
-
-  !global variables
-  integer prjf_noerr
-  parameter (prjf_noerr=0)
-
-  !routines
-  character*80 prjf_strerrno
-  external prjf_strerrno
-
-  integer prjf_init
-  external prjf_init
-
-  integer prjf_free
-  external prjf_free
-
-  integer prjf_fwd
-  external prjf_fwd
-
-  integer prjf_inv
-  external prjf_inv
+  include 'proj4.inc'
 
   integer, parameter :: PRJ90_NOERR = PRJF_NOERR
 
@@ -86,10 +67,19 @@ contains
     real(kind=kind(1.0d0)), intent(in) :: lam, phi
     real(kind=kind(1.0d0)), intent(out) :: x,y
 
-    !print*, prj%prj
     prj90_fwd_pt = prjf_fwd(prj%prj,lam,phi,x,y)
   end function prj90_fwd_pt
     
+  function prj90_inv_pt(prj,x,y,lam,phi)
+    implicit none
+    integer :: prj90_inv_pt
+    type(prj90_projection), intent(inout) :: prj
+    real(kind=kind(1.0d0)), intent(in) :: x,y
+    real(kind=kind(1.0d0)), intent(out) :: lam, phi
+
+    prj90_inv_pt = prjf_inv(prj%prj,x,y,lam,phi)
+  end function prj90_inv_pt  
+
   function prj90_fwd_array(prj,lam,phi,x,y)
     implicit none
     integer :: prj90_fwd_array
@@ -114,18 +104,7 @@ contains
        prj90_fwd_array = PRJ90_NOERR
     end if
   end function prj90_fwd_array
-
-  function prj90_inv_pt(prj,x,y,lam,phi)
-    implicit none
-    integer :: prj90_inv_pt
-    type(prj90_projection), intent(inout) :: prj
-    real(kind=kind(1.0d0)), intent(in) :: x,y
-    real(kind=kind(1.0d0)), intent(out) :: lam, phi
-
-    prj90_inv_pt = prjf_inv(prj%prj,x,y,lam,phi)
-  end function prj90_inv_pt  
-
-  
+ 
   function prj90_inv_array(prj,x,y,lam,phi)
     implicit none
     integer :: prj90_inv_array

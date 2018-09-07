@@ -22,13 +22,13 @@ program testproj
 
   integer status
   type(prj90_projection) :: proj
-  character(len=255) :: params
+  character(len=256) :: params
   real(kind=kind(1.0d0)) :: lam0,phi0,lam1,phi1,x,y
 
   params = '+proj=aea '//&
            '+ellps=WGS84 '//&
-           '+lat_1=52.83333206176 '//&
-           '+lat_2=68.16666412353 '//&
+           '+lat_1=52.8333320617676 '//&
+           '+lat_2=68.1666641235352 '//&
            '+lon_0=33.5'//&
            '+lat_0=60.5 '//&
            '+x_0=1903970.98145531 '//&

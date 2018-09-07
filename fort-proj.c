@@ -64,7 +64,10 @@ int cfort_pj_fwd(long *prj, double lam, double phi, double *x, double *y)
   *x = lam * DEG_TO_RAD;
   *y = phi * DEG_TO_RAD;
   *z = 0;
-
+  /*
+  printf("%s -> %s\n", geographic_latlon->params->param,
+                       (*(projPJ *) prj)->params->param);
+  */
   status = pj_transform(geographic_latlon, *(projPJ *) prj, 1, 1, x, y, z);
 
   pj_free(geographic_latlon);
@@ -89,18 +92,21 @@ int cfort_pj_inv(long *prj, double x, double y, double *lam, double *phi)
 
   geographic_latlon = pj_init_plus("+proj=latlong +ellps=WGS84 +datum=WGS84");
  
-  *x_tmp = x;
-  *y_tmp = y;
+  *lam = x;
+  *phi = y;
   *z = 0;
+  /*
+  printf("%s -> %s\n", (*(projPJ *) prj)->params->param,
+                        geographic_latlon->params->param);
+  */
+  status = pj_transform(*(projPJ *) prj, geographic_latlon, 1, 1, lam, phi, z);
 
-//  status = pj_transform(*(projPJ *) prj, geographic_latlon, 1, 1, x_tmp, y_tmp, z);
-//
   pj_free(geographic_latlon);
 
-  *lam = *x_tmp * RAD_TO_DEG;
-  *phi = *y_tmp * RAD_TO_DEG;
+  *lam *= RAD_TO_DEG;
+  *phi *= RAD_TO_DEG;
 
-  if (status != 0 || (*x_tmp==HUGE_VAL && *y_tmp==HUGE_VAL))
+  if (status != 0 || (*lam==HUGE_VAL && *phi==HUGE_VAL))
     return  pj_errno;
   else
     return 0;
