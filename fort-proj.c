@@ -85,8 +85,6 @@ FCALLSCFUN5(INT,cfort_pj_fwd,PRJF_FWD,prjf_fwd,PLONG,DOUBLE,DOUBLE,PDOUBLE,PDOUB
 int cfort_pj_inv(long *prj, double x, double y, double *lam, double *phi)
 {
   int status;
-  double *x_tmp;
-  double *y_tmp;
   double *z;
   projPJ geographic_latlon;
 
