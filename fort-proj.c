@@ -30,75 +30,79 @@ FCALLSCFUN1(STRING,pj_strerrno,PRJF_STRERRNO,prjf_strerrno,INT);
  * initialise projection structure
  */
 #define prjf_init_STRV_A4 NUM_ELEM_ARG(2)
-int cfort_pj_init(int *prj, int nargs, int largs, char *args)
+int cfort_pj_init(long *prj, const char *args)
 {
-  int i;
-  char **cargs;
-
-  /* copying arguments */
-  cargs = (char **) malloc(sizeof(char *)*nargs);
-  for (i=0;i<nargs;i++)
-    cargs[i] = (args+i*(largs+1));
-
-  *prj = (int) pj_init(nargs,cargs);
-  free(cargs);
+  *prj = (long) pj_init_plus(args);
   if (!*prj)
     return pj_errno;
   else
     return 0;
 }
-FCALLSCFUN4(INT,cfort_pj_init,PRJF_INIT,prjf_init, PINT, INT, INT, STRINGV);
+FCALLSCFUN2(INT,cfort_pj_init,PRJF_INIT,prjf_init, PLONG, STRING);
 
 /*
  * free projection structure
  */
-int cfort_pj_free(int prj)
+int cfort_pj_free(long *prj)
 {
-  pj_free((PJ *) prj);
+  pj_free(*(projPJ *) prj);
   return 0;
 }
-FCALLSCFUN1(INT,cfort_pj_free, PRJF_FREE, prjf_free, INT);
+FCALLSCFUN1(INT,cfort_pj_free, PRJF_FREE, prjf_free, PLONG);
 
 /*
  * forward transform
  */
-int cfort_pj_fwd(int prj, double lam, double phi, double *x, double *y)
+int cfort_pj_fwd(long *prj, double lam, double phi, double *x, double *y)
 {
-  projUV data;
+  int status;
+  double *z;
+  projPJ geographic_latlon;
 
-  data.u = lam* DEG_TO_RAD;
-  data.v = phi* DEG_TO_RAD;
-  
-  data = pj_fwd(data, (PJ *) prj);
+  geographic_latlon = pj_init_plus("+proj=latlong +ellps=WGS84 +datum=WGS84");
 
-  *x = data.u;
-  *y = data.v;
+  *x = lam * DEG_TO_RAD;
+  *y = phi * DEG_TO_RAD;
+  *z = 0;
 
-  if (data.u==HUGE_VAL && data.v==HUGE_VAL)
+  status = pj_transform(geographic_latlon, *(projPJ *) prj, 1, 1, x, y, z);
+
+  pj_free(geographic_latlon);
+
+  if (status != 0 || (*x==HUGE_VAL && *y==HUGE_VAL))
     return  pj_errno;
   else
     return 0;
 }
-FCALLSCFUN5(INT,cfort_pj_fwd,PRJF_FWD,prjf_fwd,INT,DOUBLE,DOUBLE,PDOUBLE,PDOUBLE);
+FCALLSCFUN5(INT,cfort_pj_fwd,PRJF_FWD,prjf_fwd,PLONG,DOUBLE,DOUBLE,PDOUBLE,PDOUBLE);
 
 /*
  * inverse transform
  */
-int cfort_pj_inv(int prj, double x, double y, double *lam, double *phi)
+int cfort_pj_inv(long *prj, double x, double y, double *lam, double *phi)
 {
-  projUV data;
-  
-  data.u = x;
-  data.v = y;
-  
-  data = pj_inv(data, (PJ *) prj);
+  int status;
+  double *x_tmp;
+  double *y_tmp;
+  double *z;
+  projPJ geographic_latlon;
 
-  *lam = data.u * RAD_TO_DEG;
-  *phi = data.v * RAD_TO_DEG;
+  geographic_latlon = pj_init_plus("+proj=latlong +ellps=WGS84 +datum=WGS84");
+ 
+  *x_tmp = x;
+  *y_tmp = y;
+  *z = 0;
 
-  if (data.u==HUGE_VAL && data.v==HUGE_VAL)
+//  status = pj_transform(*(projPJ *) prj, geographic_latlon, 1, 1, x_tmp, y_tmp, z);
+//
+  pj_free(geographic_latlon);
+
+  *lam = *x_tmp * RAD_TO_DEG;
+  *phi = *y_tmp * RAD_TO_DEG;
+
+  if (status != 0 || (*x_tmp==HUGE_VAL && *y_tmp==HUGE_VAL))
     return  pj_errno;
   else
     return 0;
 }
-FCALLSCFUN5(INT,cfort_pj_inv,PRJF_INV,prjf_inv,INT,DOUBLE,DOUBLE,PDOUBLE,PDOUBLE);
+FCALLSCFUN5(INT,cfort_pj_inv,PRJF_INV,prjf_inv,PLONG,DOUBLE,DOUBLE,PDOUBLE,PDOUBLE);

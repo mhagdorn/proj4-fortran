@@ -22,17 +22,17 @@ program testproj
 
   integer status
   type(prj90_projection) :: proj
-  character(len=20), dimension(8) :: params
+  character(len=255) :: params
   real(kind=kind(1.0d0)) :: lam0,phi0,lam1,phi1,x,y
 
-  params(1) = 'proj=aea'
-  params(2) = 'ellps=WGS84'
-  params(3) = 'lat_1=52.8333320617676'
-  params(4) = 'lat_2=68.1666641235352'
-  params(5) = 'lon_0=33.5'
-  params(6) = 'lat_0=60.5'
-  params(7) = 'x_0=1903970.98145531'
-  params(8) = 'y_0=898179.31322811'
+  params = '+proj=aea '//&
+           '+ellps=WGS84 '//&
+           '+lat_1=52.83333206176 '//&
+           '+lat_2=68.16666412353 '//&
+           '+lon_0=33.5'//&
+           '+lat_0=60.5 '//&
+           '+x_0=1903970.98145531 '//&
+           '+y_0=898179.31322811 '
 
   status=prj90_init(proj,params)
   if (status.ne.PRJ90_NOERR) then

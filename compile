@@ -1,0 +1,13 @@
+gcc -DPACKAGE_NAME=\"libfproj4\" -DPACKAGE_TARNAME=\"libfproj4\" \
+    -DPACKAGE_VERSION=\"1.0\" -DPACKAGE_STRING=\"libfproj4\ 1.0\" \
+    -DPACKAGE_BUGREPORT=\"Magnus.Hagdorn@ed.ac.uk\" -DPACKAGE_URL=\"\" \
+    -DPACKAGE=\"libfproj4\" -DVERSION=\"1.0\" -DHAVE_LIBM=1 -DHAVE_LIBPROJ=1 \
+    -I.   -Df2cFortran  -g -O2 -MT fort-proj.o -MD -MP -MF .deps/fort-proj.Tpo \
+    -c -o fort-proj.o fort-proj.c \
+&& mv -f .deps/fort-proj.Tpo .deps/fort-proj.Po \
+&& gfortran  -g -O2 -c -o proj4.o  proj4.f90 \
+&& rm -f libfproj4.a \
+&& ar cr libfproj4.a fort-proj.o proj4.o \
+&& ranlib libfproj4.a \
+&& gfortran -fcheck=all -Wall -g -O2 -c -o test-proj.o test-proj.f90 \
+&& gfortran test-proj.o -fcheck=all -Wall -g -O2 -lfproj4 -lproj -L. -Wl,-rpath -Wl,. -o test-proj.exe
