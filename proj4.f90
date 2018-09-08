@@ -17,12 +17,13 @@
 ! Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 module proj4
+
   include 'proj4.inc'
+
   integer, parameter :: PRJ90_NOERR = PRJF_NOERR
 
   type prj90_projection
-     private
-     integer :: prj
+     integer(kind=8) :: prj
   end type prj90_projection
 
   interface prj90_fwd
@@ -45,16 +46,16 @@ contains
   function prj90_init(prj,args)
     implicit none
     integer :: prj90_init
-    type(prj90_projection) :: prj
-    character(len=*),dimension(:) :: args
+    type(prj90_projection), intent(inout) :: prj
+    character(len=*) :: args
 
-    prj90_init = prjf_init(prj%prj,size(args),len(args),args)
+    prj90_init = prjf_init(prj%prj,args)
   end function prj90_init
 
   function prj90_free(prj)
     implicit none
     integer :: prj90_free
-    type(prj90_projection) :: prj
+    type(prj90_projection), intent(inout) :: prj
 
     prj90_free =  prjf_free(prj%prj)
   end function prj90_free
@@ -62,17 +63,27 @@ contains
   function prj90_fwd_pt(prj,lam,phi,x,y)
     implicit none
     integer :: prj90_fwd_pt
-    type(prj90_projection) :: prj
+    type(prj90_projection), intent(inout) :: prj
     real(kind=kind(1.0d0)), intent(in) :: lam, phi
     real(kind=kind(1.0d0)), intent(out) :: x,y
 
     prj90_fwd_pt = prjf_fwd(prj%prj,lam,phi,x,y)
   end function prj90_fwd_pt
     
+  function prj90_inv_pt(prj,x,y,lam,phi)
+    implicit none
+    integer :: prj90_inv_pt
+    type(prj90_projection), intent(inout) :: prj
+    real(kind=kind(1.0d0)), intent(in) :: x,y
+    real(kind=kind(1.0d0)), intent(out) :: lam, phi
+
+    prj90_inv_pt = prjf_inv(prj%prj,x,y,lam,phi)
+  end function prj90_inv_pt  
+
   function prj90_fwd_array(prj,lam,phi,x,y)
     implicit none
     integer :: prj90_fwd_array
-    type(prj90_projection) :: prj
+    type(prj90_projection), intent(inout) :: prj
     real(kind=kind(1.0d0)), dimension(:), intent(in) :: lam, phi
     real(kind=kind(1.0d0)), dimension(:), intent(out) :: x,y
 
@@ -93,22 +104,11 @@ contains
        prj90_fwd_array = PRJ90_NOERR
     end if
   end function prj90_fwd_array
-
-  function prj90_inv_pt(prj,x,y,lam,phi)
-    implicit none
-    integer :: prj90_inv_pt
-    type(prj90_projection) :: prj
-    real(kind=kind(1.0d0)), intent(in) :: x,y
-    real(kind=kind(1.0d0)), intent(out) :: lam, phi
-
-    prj90_inv_pt = prjf_inv(prj%prj,x,y,lam,phi)
-  end function prj90_inv_pt  
-
-  
+ 
   function prj90_inv_array(prj,x,y,lam,phi)
     implicit none
     integer :: prj90_inv_array
-    type(prj90_projection) :: prj
+    type(prj90_projection), intent(inout) :: prj
     real(kind=kind(1.0d0)), dimension(:), intent(in) :: x,y
     real(kind=kind(1.0d0)), dimension(:), intent(out) :: lam, phi
 
