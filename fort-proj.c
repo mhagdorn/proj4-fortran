@@ -51,62 +51,26 @@ int cfort_pj_free(long *prj)
 FCALLSCFUN1(INT,cfort_pj_free, PRJF_FREE, prjf_free, PLONG);
 
 /*
- * forward transform
+ * transform projection
  */
-int cfort_pj_fwd(long *prj, double lam, double phi, double *x, double *y)
+int cfort_pj_transform(long *prj_in,long *prj_out, double *x, double *y, int size)
 {
   int status;
-  double *z;
-  projPJ geographic_latlon;
+  double z[size];
+  memset( z, 0, size*sizeof(double));
+  //for (int i=0; i<size; i++){
+  //  printf("lam: %f, phi: %f, z: %f\n", lam[i], phi[i], z[i]);
+  //}
 
-  geographic_latlon = pj_init_plus("+proj=latlong +ellps=WGS84 +datum=WGS84");
+  printf("%s -> %s\n", (*(projPJ *) prj_in)->params->param,
+                       (*(projPJ *) prj_out)->params->param);
 
-  *x = lam * DEG_TO_RAD;
-  *y = phi * DEG_TO_RAD;
-  *z = 0;
-  /*
-  printf("%s -> %s\n", geographic_latlon->params->param,
-                       (*(projPJ *) prj)->params->param);
-  */
-  status = pj_transform(geographic_latlon, *(projPJ *) prj, 1, 1, x, y, z);
+  status = pj_transform(*(projPJ *) prj_in, *(projPJ *) prj_out, size, 1, x, y, z);
 
-  pj_free(geographic_latlon);
-
-  if (status != 0 || (*x==HUGE_VAL && *y==HUGE_VAL))
+  if (status != 0)
     return  pj_errno;
   else
     return 0;
 }
-FCALLSCFUN5(INT,cfort_pj_fwd,PRJF_FWD,prjf_fwd,PLONG,DOUBLE,DOUBLE,PDOUBLE,PDOUBLE);
-
-/*
- * inverse transform
- */
-int cfort_pj_inv(long *prj, double x, double y, double *lam, double *phi)
-{
-  int status;
-  double *z;
-  projPJ geographic_latlon;
-
-  geographic_latlon = pj_init_plus("+proj=latlong +ellps=WGS84 +datum=WGS84");
- 
-  *lam = x;
-  *phi = y;
-  *z = 0;
-  /*
-  printf("%s -> %s\n", (*(projPJ *) prj)->params->param,
-                        geographic_latlon->params->param);
-  */
-  status = pj_transform(*(projPJ *) prj, geographic_latlon, 1, 1, lam, phi, z);
-
-  pj_free(geographic_latlon);
-
-  *lam *= RAD_TO_DEG;
-  *phi *= RAD_TO_DEG;
-
-  if (status != 0 || (*lam==HUGE_VAL && *phi==HUGE_VAL))
-    return  pj_errno;
-  else
-    return 0;
-}
-FCALLSCFUN5(INT,cfort_pj_inv,PRJF_INV,prjf_inv,PLONG,DOUBLE,DOUBLE,PDOUBLE,PDOUBLE);
+FCALLSCFUN5(INT,cfort_pj_transform,PRJF_TRANSFORM,prjf_transform,
+            PLONG,PLONG,PDOUBLE,PDOUBLE, INT);

@@ -30,8 +30,5 @@
       integer prjf_free
       external prjf_free
 
-      integer prjf_fwd
-      external prjf_fwd
-
-      integer prjf_inv
-      external prjf_inv
+      integer prjf_transform
+      external prjf_transform

@@ -18,11 +18,16 @@
 
 module proj4
 
+  real(kind=8), private, parameter :: PI = 4._8 * datan(1._8) 
+  real(kind=8), private, parameter :: RAD2DEG = 180._8 / PI
+  real(kind=8), private, parameter :: DEG2RAD = PI / 180._8
+
   include 'proj4.inc'
 
   integer, parameter :: PRJ90_NOERR = PRJF_NOERR
 
   type prj90_projection
+     private
      integer(kind=8) :: prj
   end type prj90_projection
 
@@ -60,74 +65,115 @@ contains
     prj90_free =  prjf_free(prj%prj)
   end function prj90_free
 
-  function prj90_fwd_pt(prj,lam,phi,x,y)
+  function prj90_fwd_pt(prj_out,lam,phi,x,y)
     implicit none
     integer :: prj90_fwd_pt
-    type(prj90_projection), intent(inout) :: prj
-    real(kind=kind(1.0d0)), intent(in) :: lam, phi
-    real(kind=kind(1.0d0)), intent(out) :: x,y
+    real(kind=8), intent(in) :: lam, phi
+    real(kind=8), intent(out) :: x,y
+    type(prj90_projection), intent(inout) :: prj_out
+    type(prj90_projection) :: prj_in
+    integer stat
 
-    prj90_fwd_pt = prjf_fwd(prj%prj,lam,phi,x,y)
+    stat=prj90_init(prj_in, "+proj=latlong +ellps=WGS84 +datum=WGS84")
+    if (stat.ne.PRJ90_NOERR) then
+       write(*,*) prj90_strerrno(stat)
+       stop
+    end if
+    
+    x = lam*DEG2RAD
+    y = phi*DEG2RAD
+    prj90_fwd_pt = prjf_transform(prj_in%prj,prj_out%prj,&
+                                  x,y,1)
+    
+    stat = prj90_free(prj_in)
+    if (stat.ne.PRJ90_NOERR) then
+       write(*,*) prj90_strerrno(stat)
+       stop
+    end if
   end function prj90_fwd_pt
     
-  function prj90_inv_pt(prj,x,y,lam,phi)
+  function prj90_inv_pt(prj_in,x,y,lam,phi)
     implicit none
     integer :: prj90_inv_pt
-    type(prj90_projection), intent(inout) :: prj
-    real(kind=kind(1.0d0)), intent(in) :: x,y
-    real(kind=kind(1.0d0)), intent(out) :: lam, phi
+    real(kind=8), intent(in) :: x,y
+    real(kind=8), intent(out) :: lam, phi
+    type(prj90_projection), intent(inout) :: prj_in
+    type(prj90_projection) :: prj_out
+    integer stat
 
-    prj90_inv_pt = prjf_inv(prj%prj,x,y,lam,phi)
+    stat=prj90_init(prj_out, "+proj=latlong +ellps=WGS84 +datum=WGS84")
+    if (stat.ne.PRJ90_NOERR) then
+       write(*,*) prj90_strerrno(stat)
+       stop
+    end if
+    
+    lam = x
+    phi = y
+    prj90_inv_pt = prjf_transform(prj_in%prj,prj_out%prj,&
+                                  lam,phi,1)
+    lam = lam * RAD2DEG
+    phi = phi * RAD2DEG
+    
+    stat = prj90_free(prj_out)
+    if (stat.ne.PRJ90_NOERR) then
+       write(*,*) prj90_strerrno(stat)
+       stop
+    end if
   end function prj90_inv_pt  
 
-  function prj90_fwd_array(prj,lam,phi,x,y)
+  function prj90_fwd_array(prj_out,lam,phi,x,y)
     implicit none
     integer :: prj90_fwd_array
-    type(prj90_projection), intent(inout) :: prj
-    real(kind=kind(1.0d0)), dimension(:), intent(in) :: lam, phi
-    real(kind=kind(1.0d0)), dimension(:), intent(out) :: x,y
+    real(kind=8), dimension(:), intent(in) :: lam, phi
+    real(kind=8), dimension(:), intent(out) :: x,y
+    type(prj90_projection), intent(inout) :: prj_out
+    type(prj90_projection) :: prj_in
+    integer stat
 
-    integer, dimension(size(lam)) :: res
-    integer i
-
-    do i=1,size(lam)
-       res(i) = prj90_fwd_pt(prj,lam(i),phi(i),x(i),y(i))
-    end do
-
-    if (any(res.ne.PRJ90_NOERR)) then
-       do i=1,size(lam)
-          if (res(i).ne.PRJ90_NOERR) then
-             prj90_fwd_array = res(i)
-          end if
-       end do
-    else
-       prj90_fwd_array = PRJ90_NOERR
+    stat=prj90_init(prj_in, "+proj=latlong +ellps=WGS84 +datum=WGS84")
+    if (stat.ne.PRJ90_NOERR) then
+       write(*,*) prj90_strerrno(stat)
+       stop
+    end if
+    
+    x = lam*DEG2RAD
+    y = phi*DEG2RAD
+    prj90_fwd_array = prjf_transform(prj_in%prj,prj_out%prj,&
+                                     x,y,size(x))
+    
+    stat = prj90_free(prj_in)
+    if (stat.ne.PRJ90_NOERR) then
+       write(*,*) prj90_strerrno(stat)
+       stop
     end if
   end function prj90_fwd_array
  
-  function prj90_inv_array(prj,x,y,lam,phi)
+  function prj90_inv_array(prj_in,x,y,lam,phi)
     implicit none
     integer :: prj90_inv_array
-    type(prj90_projection), intent(inout) :: prj
-    real(kind=kind(1.0d0)), dimension(:), intent(in) :: x,y
-    real(kind=kind(1.0d0)), dimension(:), intent(out) :: lam, phi
+    real(kind=8), dimension(:), intent(in) :: x,y
+    real(kind=8), dimension(:), intent(out) :: lam, phi
+    type(prj90_projection), intent(inout) :: prj_in
+    type(prj90_projection) :: prj_out
+    integer stat
 
-    integer, dimension(size(x)) :: res
-    integer i
-
-    do i=1,size(x)    
-       res(i) = prj90_inv_pt(prj,x(i),y(i),lam(i),phi(i))
-    end do
-
+    stat=prj90_init(prj_out, "+proj=latlong +ellps=WGS84 +datum=WGS84")
+    if (stat.ne.PRJ90_NOERR) then
+       write(*,*) prj90_strerrno(stat)
+       stop
+    end if
     
-    if (any(res.ne.PRJ90_NOERR)) then
-       do i=1,size(x)
-          if (res(i).ne.PRJ90_NOERR) then
-             prj90_inv_array = res(i)
-          end if
-       end do
-    else
-       prj90_inv_array = PRJ90_NOERR
+    lam = x
+    phi = y
+    prj90_inv_array = prjf_transform(prj_in%prj,prj_out%prj,&
+                                     lam,phi,size(lam))
+    lam = lam * RAD2DEG
+    phi = phi * RAD2DEG
+    
+    stat = prj90_free(prj_out)
+    if (stat.ne.PRJ90_NOERR) then
+       write(*,*) prj90_strerrno(stat)
+       stop
     end if
   end function prj90_inv_array
 
