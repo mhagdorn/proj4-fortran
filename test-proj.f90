@@ -23,7 +23,7 @@ program testproj
   integer status
   type(prj90_projection) :: proj
   character(len=256) :: params
-  real(kind=kind(1.0d0)) :: lam0,phi0,lam1,phi1,x,y
+  real(kind=kind(1.0d0)) :: lam0,phi0,x0,y0,lam1(2),phi1(2),x1(2),y1(2)
 
   params = '+proj=aea '//&
            '+ellps=WGS84 '//&
@@ -42,31 +42,33 @@ program testproj
 
   lam0 = 7.0
   phi0 = 49.0
-  status = prj90_fwd(proj,lam0,phi0,x,y)
+  status = prj90_fwd(proj,lam0,phi0,x0,y0)
   if (status.ne.PRJ90_NOERR) then
      write(*,*) prj90_strerrno(status)
      stop
   end if  
-  status = prj90_inv(proj,x,y,lam1,phi1)
+  write(*,*) lam0,phi0,x0,y0
+  status = prj90_inv(proj,x0,y0,lam0,phi0)
   if (status.ne.PRJ90_NOERR) then
      write(*,*) prj90_strerrno(status)
      stop
   end if    
-  write(*,*) lam0,phi0,x,y,lam1,phi1
+  write(*,*) x0,y0,lam0,phi0
 
-  lam0 = 59.92093
-  phi0 = 71.9509
-  status = prj90_fwd(proj,lam0,phi0,x,y)
+  lam1 = [59.92093, 60.92093]
+  phi1 = [71.9509, 72.9509]
+  status = prj90_fwd(proj,lam1,phi1,x1,y1)
   if (status.ne.PRJ90_NOERR) then
      write(*,*) prj90_strerrno(status)
      stop
   end if  
-  status = prj90_inv(proj,x,y,lam1,phi1)
+  write(*,*) lam1,phi1,x1,y1
+  status = prj90_inv(proj,x1,y1,lam1,phi1)
   if (status.ne.PRJ90_NOERR) then
      write(*,*) prj90_strerrno(status)
      stop
   end if    
-  write(*,*) lam0,phi0,x,y,lam1,phi1
+  write(*,*) x1,y1,lam1,phi1
 
   status = prj90_free(proj)
 
