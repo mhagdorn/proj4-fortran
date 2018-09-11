@@ -18,6 +18,8 @@
 
 module proj4
 
+  use iso_c_binding
+
   real(kind=8), private, parameter :: PI = 4._8 * datan(1._8) 
   real(kind=8), private, parameter :: RAD2DEG = 180._8 / PI
   real(kind=8), private, parameter :: DEG2RAD = PI / 180._8
@@ -37,6 +39,28 @@ module proj4
 
   interface prj90_inv
      module procedure prj90_inv_pt, prj90_inv_array
+  end interface
+
+  interface
+      function pj_init_plus_f(params) bind(c, name='cfort_pj_init_plus')&
+                              result(prjdefn)
+          use iso_c_binding
+          character(kind=C_CHAR) :: params(*)
+          type(c_ptr)            :: prjdefn
+      end function pj_init_plus_f
+  end interface
+
+  interface
+      function pj_transform_f(srcdefn, dstdefn, point_count, point_offset,&
+                              x, y, z) bind(c, name='cfort_pj_transform_2')&
+                              result(stat)
+          use iso_c_binding
+          type(c_ptr)          :: srcdefn, dstdefn
+          integer(kind=C_LONG) :: point_count
+          integer(kind=C_INT)  :: point_offset
+          type(c_ptr)          :: x, y, z
+          integer(kind=C_INT)  :: stat
+      end function pj_transform_f
   end interface
 
 contains

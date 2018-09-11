@@ -23,7 +23,13 @@ program testproj
   integer status
   type(prj90_projection) :: proj
   character(len=256) :: params
-  real(kind=kind(1.0d0)) :: lam0,phi0,x0,y0,lam1(2),phi1(2),x1(2),y1(2)
+  real(kind=kind(1.0d0)) :: lam0,phi0,x0,y0
+  real(kind=kind(1.0d0)) :: lam1(2),phi1(2),x1(2),y1(2)
+  real(kind=kind(1.0d0)), target :: xx(2),yy(2),zz(2)
+  integer(kind=8) :: point_count
+  integer(kind=4) :: point_offset
+  type(c_ptr) :: srcdefn, dstdefn
+  type(c_ptr) :: x_ptr, y_ptr, z_ptr
 
   params = '+proj=aea '//&
            '+ellps=WGS84 '//&
@@ -63,13 +69,34 @@ program testproj
      stop
   end if  
   write(*,*) lam1,phi1,x1,y1
-  status = prj90_inv(proj,x1,y1,lam1,phi1)
-  if (status.ne.PRJ90_NOERR) then
-     write(*,*) prj90_strerrno(status)
-     stop
-  end if    
-  write(*,*) x1,y1,lam1,phi1
+!  status = prj90_inv(proj,x1,y1,lam1,phi1)
+!  if (status.ne.PRJ90_NOERR) then
+!     write(*,*) prj90_strerrno(status)
+!     stop
+!  end if    
 
   status = prj90_free(proj)
+
+  srcdefn = pj_init_plus_f(params//C_NULL_CHAR)
+  dstdefn = pj_init_plus_f("+proj=latlong +ellps=WGS84 +datum=WGS84"//C_NULL_CHAR)
+
+  xx = x1
+  yy = y1
+  zz = 0
+  point_count = size(xx)
+  point_offset = 1
+
+  print*, xx, yy, zz, point_count, point_offset
+  
+  x_ptr = c_loc(xx(1))
+  y_ptr = c_loc(yy(1))
+  z_ptr = c_loc(zz(1))
+
+  status = pj_transform_f(srcdefn, dstdefn, &
+                          int(point_count, C_LONG), point_offset,&
+                          x_ptr, y_ptr, z_ptr)
+  lam1 = xx
+  phi1 = yy
+  write(*,*) x1,y1,lam1,phi1
 
 end program testproj

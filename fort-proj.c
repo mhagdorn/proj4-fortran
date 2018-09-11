@@ -21,6 +21,32 @@
 #include <projects.h>
 #include "cfortran.h"
 
+projPJ cfort_pj_init_plus(char *args)
+{
+    projPJ prj;
+    printf("Get projection defenition...\n");
+    printf("%s\n", args);
+    prj = pj_init_plus(args);
+    printf("%s\n", prj->params->param);
+    return prj;
+}
+
+int cfort_pj_transform_2(projPJ srcdefn, projPJ dstdefn,
+                         long point_count, int point_offset,
+                         double *x, double *y, double *z)
+{
+    int stat;
+    printf("hello!\npoint_count: %ld\n", point_count);
+    //printf("%s -> %s\n", srcdefn->params->param,
+    //       dstdefn->params->param);
+    //for (int i=0; i<point_count; i++) {
+    //    printf("x: %f; y: %f; z: %f", x[i], y[i], z[i]);
+    //}
+    stat = pj_transform(srcdefn, dstdefn, point_count,
+                        point_offset, x, y, z);
+    return stat;
+}
+
 /*
  * error string
  */
@@ -30,7 +56,7 @@ FCALLSCFUN1(STRING,pj_strerrno,PRJF_STRERRNO,prjf_strerrno,INT);
  * initialise projection structure
  */
 #define prjf_init_STRV_A4 NUM_ELEM_ARG(2)
-int cfort_pj_init(long *prj, const char *args)
+int cfort_pj_init(long *prj, char *args)
 {
   *prj = (long) pj_init_plus(args);
   if (!*prj)
@@ -62,8 +88,8 @@ int cfort_pj_transform(long *prj_in,long *prj_out, double *x, double *y, int siz
   //  printf("lam: %f, phi: %f, z: %f\n", lam[i], phi[i], z[i]);
   //}
 
-  printf("%s -> %s\n", (*(projPJ *) prj_in)->params->param,
-                       (*(projPJ *) prj_out)->params->param);
+  //printf("%s -> %s\n", (*(projPJ *) prj_in)->params->param,
+  //                     (*(projPJ *) prj_out)->params->param);
 
   status = pj_transform(*(projPJ *) prj_in, *(projPJ *) prj_out, size, 1, x, y, z);
 
