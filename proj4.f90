@@ -33,6 +33,11 @@ module proj4
      integer(kind=8) :: prj
   end type prj90_projection
 
+  type projPJ_f
+     type(c_ptr) :: proj
+  end type projPJ_f
+
+
   interface prj90_fwd
      module procedure prj90_fwd_pt, prj90_fwd_array
   end interface
@@ -42,11 +47,36 @@ module proj4
   end interface
 
   interface
-      function pj_init_plus_f(params) bind(c, name='cfort_pj_init_plus')&
-                              result(prjdefn)
+      function test_out_f(str_arg, int_arg, int_ptr) bind(c, name='cfort_test_out') result (stat)
           use iso_c_binding
-          character(kind=C_CHAR) :: params(*)
-          type(c_ptr)            :: prjdefn
+          character(kind=C_CHAR), intent(inout) :: str_arg(*)
+          integer(c_int), value, intent(in)     :: int_arg
+          type(c_ptr), intent(out)              :: int_ptr
+          integer(c_int)                        :: stat
+      end function test_out_f
+  end interface
+
+  interface
+      function test_in_f(str_arg, int_ptr, int_arg) bind(c, name='cfort_test_in') result (stat)
+          use iso_c_binding
+          character(kind=C_CHAR)     :: str_arg(*)
+          type(c_ptr), intent(inout)        :: int_ptr
+          !integer(c_int), intent(in)    :: int_ptr
+          integer(c_int), value, intent(in) :: int_arg
+          integer(c_int)             :: stat
+      end function test_in_f
+  end interface
+
+
+  interface
+      function pj_init_plus_f(params, prjdefn)&
+                              bind(c, name='cfort_pj_init_plus')&
+                              result(stat)
+          use iso_c_binding
+
+          character(C_CHAR)        :: params(*)
+          type(c_ptr), intent(out) :: prjdefn
+          integer(c_int)           :: stat
       end function pj_init_plus_f
   end interface
 
@@ -55,11 +85,14 @@ module proj4
                               x, y, z) bind(c, name='cfort_pj_transform_2')&
                               result(stat)
           use iso_c_binding
-          type(c_ptr)          :: srcdefn, dstdefn
-          integer(kind=C_LONG) :: point_count
-          integer(kind=C_INT)  :: point_offset
-          type(c_ptr)          :: x, y, z
-          integer(kind=C_INT)  :: stat
+
+          !type(c_ptr), intent(in)            :: srcdefn, dstdefn
+          type(c_ptr), intent(in)            :: srcdefn, dstdefn
+          integer(C_LONG), value, intent(in) :: point_count
+          integer(C_INT), value, intent(in)  :: point_offset
+          type(c_ptr), intent(inout)         :: x, y, z
+          !real(C_DOUBLE), intent(inout)      :: x, y, z
+          integer(C_INT)                     :: stat
       end function pj_transform_f
   end interface
 
