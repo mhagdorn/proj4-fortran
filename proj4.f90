@@ -74,9 +74,9 @@ module proj4
                               result(stat)
           use iso_c_binding
 
-          character(C_CHAR)        :: params(*)
-          type(c_ptr), intent(out) :: prjdefn
-          integer(c_int)           :: stat
+          character(C_CHAR)          :: params(*)
+          type(c_ptr), intent(inout) :: prjdefn
+          integer(c_int)             :: stat
       end function pj_init_plus_f
   end interface
 

@@ -118,7 +118,7 @@ program testproj
   point_count = size(xx)
   point_offset = 1
 
-  print*, xx, yy, zz, point_count, point_offset
+  !print*, xx, yy, zz, point_count, point_offset
   
   !status = pj_transform_f(srcdefn%proj, dstdefn%proj, &
   !                        int(point_count, C_LONG), point_offset,&
@@ -134,6 +134,6 @@ program testproj
 
   lam1 = xx
   phi1 = yy
-  write(*,*) x1,y1,lam1,phi1
+  !write(*,*) x1,y1,lam1,phi1
 
 end program testproj

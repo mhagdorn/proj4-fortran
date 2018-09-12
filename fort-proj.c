@@ -39,9 +39,9 @@
 //    return 0;
 //}
 
-int cfort_pj_init_plus(char *args, projPJ prj)
+int cfort_pj_init_plus(char *args, projPJ *prj)
 {
-	if (prj = pj_init_plus(args)) {
+	if (*prj = pj_init_plus(args)) {
         printf("%s\n%p\n", args, prj);
         return 0;
     } else {
@@ -49,7 +49,7 @@ int cfort_pj_init_plus(char *args, projPJ prj)
     }
 }
 
-int cfort_pj_transform_2(projPJ srcdefn, projPJ dstdefn,
+int cfort_pj_transform_2(projPJ *srcdefn, projPJ *dstdefn,
                          long point_count, int point_offset,
                          double *x, double *y, double *z)
 {
@@ -57,13 +57,25 @@ int cfort_pj_transform_2(projPJ srcdefn, projPJ dstdefn,
     printf("point_count: %ld\npoint_offset: %d\n",
            point_count, point_offset);
     printf("%p -> %p\n", srcdefn, dstdefn);
-    //printf("%s -> %s\n", srcdefn->params->param,
-    //       dstdefn->params->param);
+
+    double xx[2] = {2810000.3358428376, 2798531.3743090290},
+           yy[2] = {8484052.6373285130, 8598003.0927982368},
+           zz[2] = {0, 0};
+    x = xx;
+    y = yy;
+    z = zz;
+
     for (int i=0; i<point_count; i++) {
         printf("x: %f; y: %f; z: %f\n", x[i], y[i], z[i]);
     }
-    //stat = pj_transform(srcdefn, dstdefn, point_count,
-    //                    point_offset, x, y, z);
+
+    stat = pj_transform(*srcdefn, *dstdefn, point_count,
+                        point_offset, xx, y, z);
+
+    for (int i=0; i<point_count; i++) {
+        printf("x: %f; y: %f; z: %f\n", x[i]*RAD_TO_DEG, y[i]*RAD_TO_DEG, z[i]*RAD_TO_DEG);
+    }
+
     return stat;
 }
 
