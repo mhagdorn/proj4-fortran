@@ -40,10 +40,11 @@ program testproj
 !  type(prj90_projection) :: proj
 !  character(len=256) :: params
 !  real(kind=kind(1.0d0)) :: lam0,phi0,x0,y0
-  real(kind=kind(1.0d0)) :: lam1(2),phi1(2),x1(2),y1(2)
-  real(kind=kind(1.0d0)), target :: xx(2),yy(2),zz(2)
+  real(kind=kind(1.0d0)) :: lam1(2),phi1(2)!,x1(2),y1(2)
+  real(kind=kind(1.0d0)), target :: xx(2), yy(2), zz(2)
 
-  type(c_ptr)     :: x_ptr, y_ptr, z_ptr
+  !type(c_ptr), pointer :: x_ptr, y_ptr, z_ptr
+  real(kind=kind(1.0d0)), pointer :: x_ptr, y_ptr, z_ptr
   integer(c_long) :: point_count
   integer(c_int)  :: point_offset
   !type(projPJ_f)  :: srcdefn, dstdefn
@@ -109,31 +110,33 @@ program testproj
   stat = pj_init_plus_f('+proj=latlong +ellps=WGS84 '//&
                         '+datum=WGS84'//C_NULL_CHAR, dstdefn)
 
-  x1 = [2810000.3358428376, 2798531.3743090290]
-  y1 = [8484052.6373285130, 8598003.0927982368]
-
-  xx = x1
-  yy = y1
+  xx = [2810000.3358428376, 2798531.3743090290]
+  yy = [8484052.6373285130, 8598003.0927982368]
   zz = 0
   point_count = size(xx)
   point_offset = 1
 
-  !print*, xx, yy, zz, point_count, point_offset
+  print*, xx, yy, point_count, point_offset
   
   !status = pj_transform_f(srcdefn%proj, dstdefn%proj, &
   !                        int(point_count, C_LONG), point_offset,&
   !                        xx, yy, zz)
 
-  x_ptr = c_loc(xx(1))
-  y_ptr = c_loc(yy(1))
-  z_ptr = c_loc(zz(1))
+ ! x_ptr = c_loc(xx(1))
+ ! y_ptr = c_loc(yy(1))
+ ! z_ptr = c_loc(zz(1))
+
+  x_ptr => xx(1)
+  y_ptr => yy(1)
+  z_ptr => zz(1)
+
 
   stat = pj_transform_f(srcdefn, dstdefn, &
                         point_count, point_offset,&
                         x_ptr, y_ptr, z_ptr)
 
-  lam1 = xx
-  phi1 = yy
-  !write(*,*) x1,y1,lam1,phi1
+  lam1 = xx * RAD2DEG
+  phi1 = yy * RAD2DEG
+  write(*,*) lam1,phi1
 
 end program testproj
