@@ -19,72 +19,44 @@
 */
 
 #include <projects.h>
-#include "cfortran.h"
 
 
-int cfort_pj_init_plus(char *args, projPJ *prj)
+/*
+ * error string
+ */
+int cfort_pj_strerrno(int err, char *err_msg)
 {
-	return (*prj = pj_init_plus(args)) ? 0 : 1;
+    char* msg = pj_strerrno(err);
+    if (msg != NULL)
+        strcpy(err_msg, msg);
+    return pj_ctx_get_errno(pj_get_default_ctx());
 }
 
-int cfort_pj_transform_2(projPJ *srcdefn, projPJ *dstdefn,
+/*
+ * initialise projection structure
+ */
+int cfort_pj_init_plus(projPJ *prjdefn, char *args)
+{
+    *prjdefn = pj_init_plus(args);
+	return pj_ctx_get_errno(pj_get_default_ctx());
+}
+
+/*
+ * free projection structure
+ */
+int cfort_pj_free(projPJ *prjdefn)
+{
+    pj_free(*prjdefn);
+	return pj_ctx_get_errno(pj_get_default_ctx());
+}
+
+/*
+ * transform projection
+ */
+int cfort_pj_transform(projPJ *srcdefn, projPJ *dstdefn,
                          long point_count, int point_offset,
                          double *x, double *y, double *z)
 {
     return  pj_transform(*srcdefn, *dstdefn,
                          point_count, point_offset, x, y, z);
 }
-
-/*
- * error string
- */
-FCALLSCFUN1(STRING,pj_strerrno,PRJF_STRERRNO,prjf_strerrno,INT);
-
-/*
- * initialise projection structure
- */
-#define prjf_init_STRV_A4 NUM_ELEM_ARG(2)
-int cfort_pj_init(long *prj, char *args)
-{
-  *prj = (long) pj_init_plus(args);
-  if (!*prj)
-    return pj_errno;
-  else
-    return 0;
-}
-FCALLSCFUN2(INT,cfort_pj_init,PRJF_INIT,prjf_init, PLONG, STRING);
-
-/*
- * free projection structure
- */
-int cfort_pj_free(long *prj)
-{
-  pj_free(*(projPJ *) prj);
-  return 0;
-}
-FCALLSCFUN1(INT,cfort_pj_free, PRJF_FREE, prjf_free, PLONG);
-
-/*
- * transform projection
- */
-int cfort_pj_transform(long *prj_in,long *prj_out, double *x, double *y, int size)
-{
-  int status;
-  double z[size];
-  memset( z, 0, size*sizeof(double));
-  //for (int i=0; i<size; i++){
-  //  printf("lam: %f, phi: %f, z: %f\n", lam[i], phi[i], z[i]);
-  //}
-
-  //printf("%s -> %s\n", (*(projPJ *) prj_in)->params->param,
-  //                     (*(projPJ *) prj_out)->params->param);
-
-  status = pj_transform(*(projPJ *) prj_in, *(projPJ *) prj_out, size, 1, x, y, z);
-
-  if (status != 0)
-    return  pj_errno;
-  else
-    return 0;
-}
-FCALLSCFUN5(INT,cfort_pj_transform,PRJF_TRANSFORM,prjf_transform,
-            PLONG,PLONG,PDOUBLE,PDOUBLE, INT);

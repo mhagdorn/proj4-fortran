@@ -20,123 +20,74 @@ program testproj
   use proj4
   implicit none
 
-!  character(len=256) :: str_arg
-!  integer(c_int), target :: int_arg
-!  type(c_ptr)        :: int_ptr
-!  !integer(c_int)        :: int_ptr
-!  integer(kind=4)    :: stat
-!
-!  int_arg = 256
-!  stat = test_out_f(str_arg, int_arg, int_ptr)
-!  print*, int_arg, trim(str_arg) 
-!  print*, "aqui..."
-!  !int_arg = 256
-!  !int_ptr = c_loc(int_arg)
-!  !str_arg = "hello!"//C_NULL_CHAR
-!  stat = test_in_f(str_arg, int_ptr, int_arg)
-!  print*, int_arg, trim(str_arg), stat 
+  integer :: status
+  type(prj90_projection) :: proj
+  character(len=256) :: params
+  real(kind=kind(1.0d0)) :: lam0,phi0,x0,y0
+  real(kind=kind(1.0d0)) :: lam1(2),phi1(2),x1(2),y1(2)
+  type(prj90_projection) :: srcdefn, dstdefn
 
-!  integer :: status
-!  type(prj90_projection) :: proj
-!  character(len=256) :: params
-!  real(kind=kind(1.0d0)) :: lam0,phi0,x0,y0
-  real(kind=kind(1.0d0)) :: lam1(2),phi1(2)!,x1(2),y1(2)
-  real(kind=kind(1.0d0)), target :: xx(2), yy(2), zz(2)
+  params = '+proj=aea '//&
+           '+ellps=WGS84 '//&
+           '+lat_1=52.8333320617676 '//&
+           '+lat_2=68.1666641235352 '//&
+           '+lon_0=33.5'//&
+           '+lat_0=60.5 '//&
+           '+x_0=1903970.98145531 '//&
+           '+y_0=898179.31322811'
 
-  !type(c_ptr), pointer :: x_ptr, y_ptr, z_ptr
-  real(kind=kind(1.0d0)), pointer :: x_ptr, y_ptr, z_ptr
-  integer(c_long) :: point_count
-  integer(c_int)  :: point_offset
-  !type(projPJ_f)  :: srcdefn, dstdefn
-  integer(c_int)  :: stat
-  type(c_ptr) :: srcdefn, dstdefn
+  status=prj90_init(proj,params)
+  if (status.ne.PRJ90_NOERR) then
+     print*, prj90_strerrno(status)
+     stop
+  end if
 
-!  params = '+proj=aea '//&
-!           '+ellps=WGS84 '//&
-!           '+lat_1=52.8333320617676 '//&
-!           '+lat_2=68.1666641235352 '//&
-!           '+lon_0=33.5'//&
-!           '+lat_0=60.5 '//&
-!           '+x_0=1903970.98145531 '//&
-!           '+y_0=898179.31322811 '
-!
-!  status=prj90_init(proj,params)
-!  if (status.ne.PRJ90_NOERR) then
-!     write(*,*) prj90_strerrno(status)
-!     stop
-!  end if
-!
-!!  lam0 = 7.0
-!!  phi0 = 49.0
-!!  status = prj90_fwd(proj,lam0,phi0,x0,y0)
-!!  if (status.ne.PRJ90_NOERR) then
-!!     write(*,*) prj90_strerrno(status)
-!!     stop
-!!  end if  
-!!  write(*,*) lam0,phi0,x0,y0
-!!  status = prj90_inv(proj,x0,y0,lam0,phi0)
-!!  if (status.ne.PRJ90_NOERR) then
-!!     write(*,*) prj90_strerrno(status)
-!!     stop
-!!  end if    
-!!  write(*,*) x0,y0,lam0,phi0
-!
-!  lam1 = [59.92093, 60.92093]
-!  phi1 = [71.9509, 72.9509]
-!  status = prj90_fwd(proj,lam1,phi1,x1,y1)
-!  if (status.ne.PRJ90_NOERR) then
-!     write(*,*) prj90_strerrno(status)
-!     stop
-!  end if  
-!  write(*,*) lam1,phi1,x1,y1
-!  status = prj90_inv(proj,x1,y1,lam1,phi1)
-!  if (status.ne.PRJ90_NOERR) then
-!     write(*,*) prj90_strerrno(status)
-!     stop
-!  end if    
-!
-!  status = prj90_free(proj)
+  lam0 = 7.0
+  phi0 = 49.0
+  x0 = 0
+  y0 = 0
+  status = prj90_fwd_pt(proj, lam0, phi0, x0, y0)
+  if (status.ne.PRJ90_NOERR) then
+     print*, prj90_strerrno(status)
+     stop
+  end if  
+  print*, lam0, phi0, x0, y0
+  lam0 = 0
+  phi0 = 0
+  status = prj90_inv(proj, x0, y0, lam0, phi0)
+  if (status.ne.PRJ90_NOERR) then
+     print*, prj90_strerrno(status)
+     stop
+  end if    
+  print*, x0, y0, lam0, phi0
 
-  stat = pj_init_plus_f('+proj=aea '//&
-                        '+ellps=WGS84 '//&
-                        '+lat_1=52.8333320617676 '//&
-                        '+lat_2=68.1666641235352 '//&
-                        '+lon_0=33.5'//&
-                        '+lat_0=60.5 '//&
-                        '+x_0=1903970.98145531 '//&
-                        '+y_0=898179.31322811'//&
-                        C_NULL_CHAR, srcdefn)
+  lam1 = [59.92093, 60.92093]
+  phi1 = [71.9509, 72.9509]
+  x1 = [0, 0]
+  y1 = [0, 0] 
+  status = prj90_fwd(proj, lam1, phi1, x1, y1)
+  if (status.ne.PRJ90_NOERR) then
+     print*, prj90_strerrno(status)
+     stop
+  end if  
+  print*, lam1, phi1, x1, y1
+  lam1 = [0, 0]
+  phi1 = [0, 0]
 
-  stat = pj_init_plus_f('+proj=latlong +ellps=WGS84 '//&
-                        '+datum=WGS84'//C_NULL_CHAR, dstdefn)
+  srcdefn = proj
+  status=prj90_init(dstdefn,"+proj=latlong +ellps=WGS84 +datum=WGS84")
+  if (status.ne.PRJ90_NOERR) then
+     print*, prj90_strerrno(status)
+     stop
+  end if
 
-  xx = [2810000.3358428376, 2798531.3743090290]
-  yy = [8484052.6373285130, 8598003.0927982368]
-  zz = 0
-  point_count = size(xx)
-  point_offset = 1
+  status = prj90_transform_array(srcdefn, dstdefn ,x1, y1, lam1, phi1)
+  if (status.ne.PRJ90_NOERR) then
+     print*, prj90_strerrno(status)
+     stop
+  end if    
+  print*, x1,y1,lam1*RAD2DEG,phi1*RAD2DEG
 
-  print*, xx, yy, point_count, point_offset
-  
-  !status = pj_transform_f(srcdefn%proj, dstdefn%proj, &
-  !                        int(point_count, C_LONG), point_offset,&
-  !                        xx, yy, zz)
-
- ! x_ptr = c_loc(xx(1))
- ! y_ptr = c_loc(yy(1))
- ! z_ptr = c_loc(zz(1))
-
-  x_ptr => xx(1)
-  y_ptr => yy(1)
-  z_ptr => zz(1)
-
-
-  stat = pj_transform_f(srcdefn, dstdefn, &
-                        point_count, point_offset,&
-                        x_ptr, y_ptr, z_ptr)
-
-  lam1 = xx * RAD2DEG
-  phi1 = yy * RAD2DEG
-  write(*,*) lam1,phi1
+  status = prj90_free(proj)
 
 end program testproj
