@@ -20,8 +20,9 @@ module proj4
 
     use iso_c_binding
 
+    ! Chekout for errno source code in the pj_strerrno.c
     integer, parameter :: PRJ90_NOERR = 0
-    integer, parameter :: PRJ90_TOLERANCE_CONDITION_ERR = 0
+    integer, parameter :: PRJ90_TOLERANCE_CONDITION_ERR = -20
 
     type prj90_projection
         private
