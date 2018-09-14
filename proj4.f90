@@ -21,6 +21,7 @@ module proj4
     use iso_c_binding
 
     integer, parameter :: PRJ90_NOERR = 0
+    integer, parameter :: PRJ90_TOLERANCE_CONDITION_ERR = 0
 
     type prj90_projection
         private
