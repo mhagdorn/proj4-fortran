@@ -19,94 +19,44 @@
 */
 
 #include <projects.h>
-#include "cfortran.h"
+
 
 /*
  * error string
  */
-FCALLSCFUN1(STRING,pj_strerrno,PRJF_STRERRNO,prjf_strerrno,INT);
+int cfort_pj_strerrno(int err, char *err_msg)
+{
+    char* msg = pj_strerrno(err);
+    if (msg != NULL)
+        strcpy(err_msg, msg);
+    return pj_ctx_get_errno(pj_get_default_ctx());
+}
 
 /*
  * initialise projection structure
  */
-#define prjf_init_STRV_A4 NUM_ELEM_ARG(2)
-int cfort_pj_init(long *prj, const char *args)
+int cfort_pj_init_plus(projPJ *prjdefn, char *args)
 {
-  *prj = (long) pj_init_plus(args);
-  if (!*prj)
-    return pj_errno;
-  else
-    return 0;
+    *prjdefn = pj_init_plus(args);
+	return pj_ctx_get_errno(pj_get_default_ctx());
 }
-FCALLSCFUN2(INT,cfort_pj_init,PRJF_INIT,prjf_init, PLONG, STRING);
 
 /*
  * free projection structure
  */
-int cfort_pj_free(long *prj)
+int cfort_pj_free(projPJ *prjdefn)
 {
-  pj_free(*(projPJ *) prj);
-  return 0;
+    pj_free(*prjdefn);
+	return pj_ctx_get_errno(pj_get_default_ctx());
 }
-FCALLSCFUN1(INT,cfort_pj_free, PRJF_FREE, prjf_free, PLONG);
 
 /*
- * forward transform
+ * transform projection
  */
-int cfort_pj_fwd(long *prj, double lam, double phi, double *x, double *y)
+int cfort_pj_transform(projPJ *srcdefn, projPJ *dstdefn,
+                         long point_count, int point_offset,
+                         double *x, double *y, double *z)
 {
-  int status;
-  double *z;
-  projPJ geographic_latlon;
-
-  geographic_latlon = pj_init_plus("+proj=latlong +ellps=WGS84 +datum=WGS84");
-
-  *x = lam * DEG_TO_RAD;
-  *y = phi * DEG_TO_RAD;
-  *z = 0;
-  /*
-  printf("%s -> %s\n", geographic_latlon->params->param,
-                       (*(projPJ *) prj)->params->param);
-  */
-  status = pj_transform(geographic_latlon, *(projPJ *) prj, 1, 1, x, y, z);
-
-  pj_free(geographic_latlon);
-
-  if (status != 0 || (*x==HUGE_VAL && *y==HUGE_VAL))
-    return  pj_errno;
-  else
-    return 0;
+    return  pj_transform(*srcdefn, *dstdefn,
+                         point_count, point_offset, x, y, z);
 }
-FCALLSCFUN5(INT,cfort_pj_fwd,PRJF_FWD,prjf_fwd,PLONG,DOUBLE,DOUBLE,PDOUBLE,PDOUBLE);
-
-/*
- * inverse transform
- */
-int cfort_pj_inv(long *prj, double x, double y, double *lam, double *phi)
-{
-  int status;
-  double *z;
-  projPJ geographic_latlon;
-
-  geographic_latlon = pj_init_plus("+proj=latlong +ellps=WGS84 +datum=WGS84");
- 
-  *lam = x;
-  *phi = y;
-  *z = 0;
-  /*
-  printf("%s -> %s\n", (*(projPJ *) prj)->params->param,
-                        geographic_latlon->params->param);
-  */
-  status = pj_transform(*(projPJ *) prj, geographic_latlon, 1, 1, lam, phi, z);
-
-  pj_free(geographic_latlon);
-
-  *lam *= RAD_TO_DEG;
-  *phi *= RAD_TO_DEG;
-
-  if (status != 0 || (*lam==HUGE_VAL && *phi==HUGE_VAL))
-    return  pj_errno;
-  else
-    return 0;
-}
-FCALLSCFUN5(INT,cfort_pj_inv,PRJF_INV,prjf_inv,PLONG,DOUBLE,DOUBLE,PDOUBLE,PDOUBLE);
