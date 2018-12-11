@@ -32,7 +32,7 @@ program testproj
            '+ellps=WGS84 '//&
            '+lat_1=52.8333320617676 '//&
            '+lat_2=68.1666641235352 '//&
-           '+lon_0=33.5'//&
+           '+lon_0=33.5 '//&
            '+lat_0=60.5 '//&
            '+x_0=1903970.98145531 '//&
            '+y_0=898179.31322811'
@@ -43,8 +43,8 @@ program testproj
      stop
   end if
 
-  lam0 = 7.0
-  phi0 = 49.0
+  lam0 = 7.d0
+  phi0 = 49.d0
   x0 = 0
   y0 = 0
   status = prj90_fwd_pt(proj, lam0, phi0, x0, y0)
@@ -62,8 +62,8 @@ program testproj
   end if    
   print*, x0, y0, lam0, phi0
 
-  lam1 = [59.92093, 60.92093]
-  phi1 = [71.9509, 72.9509]
+  lam1 = [59.92093d0, 60.92093d0]
+  phi1 = [71.9509d0, 72.9509d0]
   x1 = [0, 0]
   y1 = [0, 0] 
   status = prj90_fwd(proj, lam1, phi1, x1, y1)
@@ -101,8 +101,8 @@ program testproj
 
   print*, x1, y1, lam1*RAD2DEG, phi1*RAD2DEG
 
-  lam2 = reshape([59.92093, 60.92093, 59.92093, 60.92093] , shape(lam2))
-  phi2 = reshape([71.9509, 72.9509, 71.9509, 72.9509], shape(phi2))
+  lam2 = reshape([59.92093d0, 60.92093d0, 59.92093d0, 60.92093d0] , shape(lam2))
+  phi2 = reshape([71.9509d0, 72.9509d0, 71.9509d0, 72.9509d0], shape(phi2))
   x2 = lam2*DEG2RAD 
   y2 = phi2*DEG2RAD 
 
