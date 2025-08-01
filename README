@@ -1,3 +1,7 @@
+
+This wrapper has not been updated in years and is obsolete. Instead use the
+new wrapper developed by João Macedo: https://gitlab.com/likeno/fortran-proj
+
 proj4-fortran
 =============
 This directory contains f77 and f90 wrappers for proj4, a cartograohic
